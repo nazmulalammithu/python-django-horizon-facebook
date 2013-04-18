@@ -1,0 +1,47 @@
+To install this plugin you need to update a couple settings and templates
+in your dashboard deployment.
+
+1. update the dashboard settings
+Add 'horizon.facebook' to INSTALLED_APPS
+Add 'horizon.facebook.backend.FacebookBackend' to AUTHENTICATION_BACKENDS
+define:
+AUTH_PROFILE_MODULE = 'horizon.facebook.FacebookProfile'
+
+2. update the dashboard local_settings (this could go in settings too)
+
+Add these to your dashboard local_settings file
+and populate there values with appropriate data
+FACEBOOK_APP_ID = ""
+FACEBOOK_APP_SECRET = ""
+FACEBOOK_SCOPE = "email"
+ADMIN_USER = ""
+ADMIN_TENANT = ""
+ADMIN_PASSWORD = ""
+MEMBER_USER_ROLE = ""
+DATABASES = {'default': {'ENGINE': 'django.db.backends.mysql',
+                         'NAME': '',
+                         'USER': '',
+                         'PASSWORD': ''}}
+
+then sync db so that the db tables are created.
+horizon doesn't use a database so the above includes a database stanza
+
+
+3. update the dashboard's urls.py
+
+Add a line to the dashboard's urls.py like this to add the facebook urls in
+    url(r'facebook/', include('horizon.facebook.urls')),
+
+if there's a line that looks like url(r'', ....) the you need to put it
+above that line or the facebook code will never get called.
+
+
+4. overwrite templates if you want to.
+
+the templates in horizon/facebook/templates aren't actually used there.
+they are doctored a bit to add a facebook link and let the errors messages
+bubble up when facebook login fails.
+
+You'll find an identical tree in horizon/templates overwrite the ones in the
+horizon/templates tree with the files from horizon/facebook/templates that
+you find useful to deploy your facebook integration.
