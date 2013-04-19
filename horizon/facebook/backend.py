@@ -6,6 +6,7 @@ import urllib
 
 from django.conf import settings
 from django.contrib.auth.models import User, AnonymousUser
+from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 import string
 import random
@@ -33,10 +34,9 @@ class FacebookBackend:
             'client_id': settings.FACEBOOK_APP_ID,
             'client_secret': settings.FACEBOOK_APP_SECRET,
             'redirect_uri': request.build_absolute_uri(
-                '/facebook/authentication_callback'),
+                reverse('horizon.facebook.views.authentication_callback')),
             'code': token,
         }
-
         # Get a legit access token
         target = urllib.urlopen(
                 'https://graph.facebook.com/oauth/access_token?'
@@ -92,8 +92,7 @@ class FacebookBackend:
                                                    fb_profile['email'],
                                                    tenant.id,
                                                    True)
-                admin_user_role = '88c1f69ec4954d9ab3a82ec662537911'
-                member_user_role = '193c1acbde854269a00386cff6ed16f2'
+                member_user_role = settings.MEMBER_USER_ROLE
                 keystone_admin.roles.add_user_role(user.id,
                                                    member_user_role,
                                                    tenant.id)
@@ -101,7 +100,7 @@ class FacebookBackend:
                 tenant_id = fb_user.tenant_id
                 fb_user.save()
             except:
-                fb_user.delete()
+                fb_user.delete()	
 
         facebook_id = fb_profile['id']
         username = "facebook%s" % facebook_id
