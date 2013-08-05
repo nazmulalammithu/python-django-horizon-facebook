@@ -1,2 +1,4 @@
 include LICENSE
+include cron/trystack-set-api-passwords
 recursive-include horizon/templates *.html
+recursive-include openstack_dashboard/dashboards/settings/apipassword/templates *.html

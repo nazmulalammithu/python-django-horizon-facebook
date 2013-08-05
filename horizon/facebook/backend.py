@@ -10,7 +10,6 @@ from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 import string
 import random
-from horizon import api
 from models import FacebookProfile
 from keystoneclient import service_catalog
 from keystoneclient.v2_0 import client as keystone_client
@@ -24,6 +23,39 @@ class FacebookBackend:
                                       password=settings.ADMIN_PASSWORD,
                                       tenant_name=settings.ADMIN_TENANT,
                                       auth_url=settings.OPENSTACK_KEYSTONE_URL)
+
+    def keystone_user_exists(self, username):
+        keystone_admin = self._admin_client()
+        users = keystone_admin.users.list()
+        for user in users:
+            if user.name == username:
+                return True
+        return False
+
+    def get_keystone_tenant(self, tenant_name):
+        keystone_admin = self._admin_client()
+        tenants = keystone_admin.tenants.list()
+        for tenant in tenants:
+            if tenant.name == tenant_name:
+                return tenant
+        return None
+
+    def add_keystone_user(self, settings, tenant_name, password, fb_profile):
+        keystone_admin = self._admin_client()
+    
+        tenant = keystone_admin.tenants.create(tenant_name,
+                                               "Auto created account",
+                                               True)
+        user = keystone_admin.users.create(tenant_name,
+                                           password,
+                                           fb_profile['email'],
+                                           tenant.id,
+                                           True)
+        member_user_role = settings.MEMBER_USER_ROLE
+        keystone_admin.roles.add_user_role(user.id,
+                                           member_user_role,
+                                           tenant.id)
+        return tenant
 
     def authenticate(self, token=None, request=None):
         """ Reads in a Facebook code and asks Facebook
@@ -42,6 +74,10 @@ class FacebookBackend:
                 'https://graph.facebook.com/oauth/access_token?'
                 + urllib.urlencode(args)).read()
         response = cgi.parse_qs(target)
+        if 'access_token' not in response:
+            messages.error(
+                request, _("Token Expired, please login again."))
+            return None
         access_token = response['access_token'][-1]
 
         # Read the user's profile information
@@ -59,7 +95,6 @@ class FacebookBackend:
             password = fb_user.password
             tenant_id = fb_user.tenant_id
             fb_user.save()
-
         except FacebookProfile.DoesNotExist:
             # No existing user
             try:
@@ -82,24 +117,15 @@ class FacebookBackend:
                                           access_token=access_token,
                                           password=password)
                 tenant_name = "facebook%s" % fb_profile['id']
-                keystone_admin = self._admin_client()
-
-                tenant = keystone_admin.tenants.create(tenant_name,
-                                                       "Auto created account",
-                                                       True)
-                user = keystone_admin.users.create(tenant_name,
-                                                   password,
-                                                   fb_profile['email'],
-                                                   tenant.id,
-                                                   True)
-                member_user_role = settings.MEMBER_USER_ROLE
-                keystone_admin.roles.add_user_role(user.id,
-                                                   member_user_role,
-                                                   tenant.id)
+                if not self.keystone_user_exists(username):
+                    tenant = self.add_keystone_user(settings, tenant_name, password, fb_profile)
+                else:
+                    tenant = self.get_keystone_tenant(settings, tenant_name)
                 fb_user.tenant_id = tenant.id
                 tenant_id = fb_user.tenant_id
                 fb_user.save()
-            except:
+            except Exception, e:
+                messages.error(request, e)
                 fb_user.delete()	
 
         facebook_id = fb_profile['id']
@@ -113,24 +139,36 @@ class FacebookBackend:
             f = urllib.urlopen(group_url)
             graph_data_json = f.read()
             f.close()
-            group_file_fh = open(GROUP_FILE, 'wb')
-            group_file_fh.write(graph_data_json)
-            group_file_fh.close()
             graph_data = json.loads(graph_data_json)
 
             if len(graph_data['data']) > 0:
-                user = keystone.authenticate(request=request,
+                try:
+                    user = keystone.authenticate(request=request,
                                       username=username,
                                       password=password,
                                       tenant=None,
                                       auth_url=settings.OPENSTACK_KEYSTONE_URL)
+                except Exception, e:
+                    messages.error(request, self.keystone_user_exists(username))
+                    if not self.keystone_user_exists(username):
+                        
+                        tenant = self.add_keystone_user(settings, username, password, fb_profile)
+                        user = keystone.authenticate(request=request,
+                                      username=username,
+                                      password=password,
+                                      tenant=None,
+                                      auth_url=settings.OPENSTACK_KEYSTONE_URL)
+                    else:
+                        raise e
                 return user
             else:
                 messages.error(
                     request, "Your facebookID is not in TryStack group yet.")
         except Exception as e:
             messages.error(
-                request, "Failed to login facebookID %s" % e)
+                request, _("Failed to login facebookID %s") % username)
+            messages.error(
+                request, _("Failed to login facebookID %s") % e)
 
     def get_user(self, user_id):
         """ Just returns the user of a given ID. """
@@ -140,3 +178,4 @@ class FacebookBackend:
 
     supports_object_permissions = False
     supports_anonymous_user = True
+    supports_inactive_user = False

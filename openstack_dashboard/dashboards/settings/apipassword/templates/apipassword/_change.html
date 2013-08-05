@@ -1,0 +1,29 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}api_password_modal{% endblock %}
+{% block form_action %}{% url 'horizon:settings:apipassword:index' %}{% endblock %}
+
+{% block modal_id %}api_password_modal{% endblock %}
+{% block modal-header %}{% trans "API Password" %}{% endblock %}
+
+{% block modal-body %}
+<div class="left">
+  {% if password %}
+      Your api password is: {{ password }}
+  {% else %}
+      Please submit the form to generate a new API password.
+  {% endif %}
+</div>
+<div class="right">
+    <h3>{% trans "Information:" %}</h3>
+    <p>{% trans "After you generate a password it will be activated within the hour. Once the password is activated it will no longer be displayed here. The password will be active until you generate a new one." %}</p>
+</div>
+{% endblock %}
+
+{% block modal-footer %}
+    <button type="submit" class="btn btn-primary">{% trans "Request API password" %}</button>
+    {% if hide %}<a href="{% url 'horizon:settings:apipassword:index' %}" class="btn secondary cancel close">{% trans "Cancel" %}</a>{% endif %}
+{% endblock %}
+

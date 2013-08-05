@@ -14,3 +14,7 @@ class FacebookProfile(models.Model):
         fb_profile = urllib.urlopen('https://graph.facebook.com/me?access_token=%s' % self.access_token)
         return json.load(fb_profile)
 
+class ApiPasswordRequest(models.Model):
+    user = models.OneToOneField(User)
+    create_stamp = models.DateField(auto_now_add=True)
+    set_stamp = models.DateField(null=True, blank=True)
