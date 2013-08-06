@@ -17,21 +17,6 @@ from keystoneclient.v2_0 import tokens
 from django.contrib import messages
 from openstack_auth.backend import KeystoneBackend
 
-GROUP_FILE = '/tmp/facebook_group.json'
-UPDATE_DURATION = 5
-
-
-def refresh_needed():
-    try:
-        now = datetime.datetime.now()
-        refresh = datetime.timedelta(minutes=UPDATE_DURATION)
-        group_file = GROUP_FILE
-        updated = datetime.datetime.fromtimestamp(os.stat(group_file).st_mtime)
-        return now - updated > refresh
-    except:
-        return True
-
-
 class FacebookBackend:
     def _admin_client(self):
         return  keystone_client.Client(username=settings.ADMIN_USER,
@@ -122,20 +107,17 @@ class FacebookBackend:
         username = "facebook%s" % facebook_id
         try:
             graph_data = None
-            if refresh_needed():
-                group_url = (
-                        "https://graph.facebook.com/"
-                        "269238013145112/members?access_token=%s"
-                        % access_token)
-                f = urllib.urlopen(group_url)
-                graph_data_json = f.read()
-                f.close()
-                group_file_fh = open(GROUP_FILE, 'wb')
-                group_file_fh.write(graph_data_json)
-                group_file_fh.close()
-                graph_data = json.loads(graph_data_json)
-            else:
-                graph_data = json.load(open(GROUP_FILE))
+            group_url = (
+                    "https://graph.facebook.com/"
+                    "269238013145112/members?limit=1&access_token=%s"
+                    % access_token)
+            f = urllib.urlopen(group_url)
+            graph_data_json = f.read()
+            f.close()
+            group_file_fh = open(GROUP_FILE, 'wb')
+            group_file_fh.write(graph_data_json)
+            group_file_fh.close()
+            graph_data = json.loads(graph_data_json)
 
             if len(graph_data['data']) > 0:
                 user = keystone.authenticate(request=request,
