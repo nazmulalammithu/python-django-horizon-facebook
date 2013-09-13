@@ -28,13 +28,21 @@ class ApiPasswordView(forms.ModalFormView):
     success_url = reverse_lazy('horizon:settings:apipassword:index')
 
     def get_context_data(self, **kwargs):
-        user = User.objects.get(username=self.request.user.username)
+        user = None
+        pass_req = None
         password = None
         try:
-            pass_req = ApiPasswordRequest.objects.get(user_id = user.id)
-            if pass_req.set_stamp == None:
-                profile = FacebookProfile.objects.get(user=user)
-                password = profile.password
+            user = User.objects.get(username=self.request.user.username)
+            try:
+                pass_req = ApiPasswordRequest.objects.get(user_id = user.id)
+                if pass_req.set_stamp == None:
+                    profile = FacebookProfile.objects.get(user=user)
+                    password = profile.password
+            except:
+                pass
         except:
             pass
-        return {'password': password}
+          
+        return {'user': user,
+                'pass_req': pass_req,
+                'password': password}

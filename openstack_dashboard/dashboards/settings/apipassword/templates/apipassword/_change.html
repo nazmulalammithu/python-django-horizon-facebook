@@ -11,14 +11,20 @@
 {% block modal-body %}
 <div class="left">
   {% if password %}
-      Your api password is: {{ password }}
+      Your api password is: {{ password }}<br>
+      <span style="color:red;font-weight:bold;">Password is currently inactive.</span>
   {% else %}
+      {% if pass_req %}
+      <span style="color:green;font-weight:bold;">You password is active</span><br>
+      {% else %}
+      You have not requested an api password.<br>
+      {% endif %}
       Please submit the form to generate a new API password.
   {% endif %}
 </div>
 <div class="right">
     <h3>{% trans "Information:" %}</h3>
-    <p>{% trans "After you generate a password it will be activated within the hour. Once the password is activated it will no longer be displayed here. The password will be active until you generate a new one." %}</p>
+    <p>{% trans "Passwords are activated once an hour. Once your password is activated it will no longer be displayed here and will be active until you generate a new one." %}</p>
 </div>
 {% endblock %}
 
