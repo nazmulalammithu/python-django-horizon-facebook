@@ -14,10 +14,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from datetime import datetime
+
 from horizon import forms
 
 from .forms import ApiPasswordForm
 from django.core.urlresolvers import reverse_lazy
+from django.contrib import auth
 from django.contrib.auth.models import User
 from horizon.facebook.models import FacebookProfile, ApiPasswordRequest
 
@@ -38,6 +41,11 @@ class ApiPasswordView(forms.ModalFormView):
                 if pass_req.set_stamp == None:
                     profile = FacebookProfile.objects.get(user=user)
                     password = profile.password
+                    self.request.session.set_expiry(3)
+
+                pass_req.set_stamp = datetime.now()
+                pass_req.save()
+
             except:
                 pass
         except:

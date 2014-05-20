@@ -16,6 +16,7 @@ from keystoneclient.v2_0 import client as keystone_client
 from keystoneclient.v2_0 import tokens
 from django.contrib import messages
 from openstack_auth.backend import KeystoneBackend
+from django.utils.translation import ugettext_lazy as _
 
 class FacebookBackend:
     def _admin_client(self):
@@ -120,13 +121,14 @@ class FacebookBackend:
                 if not self.keystone_user_exists(username):
                     tenant = self.add_keystone_user(settings, tenant_name, password, fb_profile)
                 else:
-                    tenant = self.get_keystone_tenant(settings, tenant_name)
+                    tenant = self.get_keystone_tenant(tenant_name)
                 fb_user.tenant_id = tenant.id
                 tenant_id = fb_user.tenant_id
                 fb_user.save()
             except Exception, e:
                 messages.error(request, e)
-                fb_user.delete()	
+                if fb_user.id :
+                    fb_user.delete()	
 
         facebook_id = fb_profile['id']
         username = "facebook%s" % facebook_id
@@ -146,7 +148,6 @@ class FacebookBackend:
                     user = keystone.authenticate(request=request,
                                       username=username,
                                       password=password,
-                                      tenant=None,
                                       auth_url=settings.OPENSTACK_KEYSTONE_URL)
                 except Exception, e:
                     messages.error(request, self.keystone_user_exists(username))
@@ -156,7 +157,6 @@ class FacebookBackend:
                         user = keystone.authenticate(request=request,
                                       username=username,
                                       password=password,
-                                      tenant=None,
                                       auth_url=settings.OPENSTACK_KEYSTONE_URL)
                     else:
                         raise e

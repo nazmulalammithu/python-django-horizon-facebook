@@ -1,6 +1,6 @@
 Name:		python-django-horizon-facebook
-Version:	2013.1
-Release:	3%{?dist}
+Version:	2014.1
+Release:	1%{?dist}
 Summary:	A facebook auth plugin for horizon and api password distribution
 
 Group:		Development/Libraries
@@ -54,6 +54,8 @@ install -t %{buildroot}%{_sysconfdir}/cron.hourly/ cron/trystack-set-api-passwor
 %{python_sitelib}/horizon/facebook/templates/auth/*.html
 
 %changelog
+* Tue May 20 2014 Dan Radez <dradez@redhat.com> - 2014.1-1
+- updates for icehouse
 * Tue Jul 16 2013 Dan Radez <dradez@redhat.com> - 2013.1-1
 - Added API password managment scripts
 * Tue Mar 27 2012 Dan Radez <dradez@redhat.com> - 2012.2-1

@@ -47,7 +47,19 @@ class ApiPasswordForm(forms.SelfHandlingForm):
         password = "".join([random.choice(
                             string.ascii_uppercase + string.ascii_lowercase + string.digits)
                                    for i in range(16)])
-        profile.password = password
-        profile.save() 
+
+        try:
+            api.keystone.user_update_own_password(request,
+                                                profile.password,
+                                                password)
+            profile.password = password
+            profile.save() 
+            return True
+
+        except Exception, e:
+            exceptions.handle(request,
+                              _('Unable to change password. %s' % e))
+            return False
+
 
         return True

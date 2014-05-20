@@ -12,10 +12,11 @@
 <div class="left">
   {% if password %}
       Your api password is: {{ password }}<br>
-      <span style="color:red;font-weight:bold;">Password is currently inactive.</span>
+      Changing your password has invalidated your session.<br>
+      You will be automatically logged out now, please log back in to continue.<br>
   {% else %}
       {% if pass_req %}
-      <span style="color:green;font-weight:bold;">You password is active</span><br>
+      You have generated an api password.<br>
       {% else %}
       You have not requested an api password.<br>
       {% endif %}
@@ -24,7 +25,7 @@
 </div>
 <div class="right">
     <h3>{% trans "Information:" %}</h3>
-    <p>{% trans "Passwords are activated once an hour. Once your password is activated it will no longer be displayed here and will be active until you generate a new one." %}</p>
+    <p>{% trans "Your password is activated. It will not be displayed here again after you leave this page. You will have to generate a new one to see your password again." %}</p>
 </div>
 {% endblock %}
 

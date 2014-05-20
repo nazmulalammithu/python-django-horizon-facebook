@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name = "python-django-horizon-facebook",
-    version = "2013.1",
+    version = "2014.1",
     description = ("A facebook auth plugin for django-horizon."),
     maintainer = "Dan Radez",
     maintainer_email = 'dradez@redhat.com',
