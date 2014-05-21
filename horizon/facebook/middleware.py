@@ -3,11 +3,14 @@ import json
  
 from keystone.common import wsgi
 from keystone import exception
+from keystone.common import config
 
 AUTH_TOKEN_HEADER = 'X-Auth-Token'
 
 # Environment variable used to pass the request context
 CONTEXT_ENV = wsgi.CONTEXT_ENV
+
+CONF = config.CONF
 
 class ServiceTokenMiddleware(wsgi.Middleware):
     def __init__(self, *args, **kwargs):
@@ -21,11 +24,12 @@ class ServiceTokenMiddleware(wsgi.Middleware):
         token = request.headers.get(AUTH_TOKEN_HEADER)
         context = request.environ.get(CONTEXT_ENV, {})
 
-        try:
-            body = json.loads(request.body)
-            username = body['auth']['passwordCredentials']['username']
-            if username is None:
-                raise exception.Unauthorized("Invalid user")
-            request.environ['REMOTE_USER'] = username
-        except:
-            pass
+        if token == CONF.admin_token:
+            try:
+                body = json.loads(request.body)
+                username = body['auth']['passwordCredentials']['username']
+                if username is None:
+                    raise exception.Unauthorized("Invalid user")
+                request.environ['REMOTE_USER'] = username
+            except:
+                pass
