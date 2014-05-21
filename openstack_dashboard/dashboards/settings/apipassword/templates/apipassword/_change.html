@@ -15,17 +15,12 @@
       Changing your password has invalidated your session.<br>
       You will be automatically logged out now, please log back in to continue.<br>
   {% else %}
-      {% if pass_req %}
-      You have generated an api password.<br>
-      {% else %}
-      You have not requested an api password.<br>
-      {% endif %}
       Please submit the form to generate a new API password.
   {% endif %}
 </div>
 <div class="right">
     <h3>{% trans "Information:" %}</h3>
-    <p>{% trans "Your password is activated. It will not be displayed here again after you leave this page. You will have to generate a new one to see your password again." %}</p>
+    <p>{% trans "A new password will only be displayed once. You will have to generate a new one to see your password again." %}</p>
 </div>
 {% endblock %}
 

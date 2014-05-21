@@ -24,7 +24,7 @@ from openstack_dashboard.dashboards.settings import dashboard
 class ApiPasswordPanel(horizon.Panel):
     name = _("API Password")
     slug = 'apipassword'
-    # permissions = ('openstack.roles.apitest',) # optionally require a keystone role
+    #permissions = ('openstack.roles.apitest',) # optionally require a keystone role
 
 
 dashboard.Settings.register(ApiPasswordPanel)

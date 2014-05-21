@@ -23,6 +23,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 from django.forms import ValidationError
 from django.views.decorators.debug import sensitive_variables
+from django.conf import settings
 
 from horizon import forms
 from horizon import messages
@@ -30,31 +31,25 @@ from horizon import exceptions
 from horizon.utils import validators
 from openstack_dashboard import api
 
-from django.contrib.auth.models import User
-from horizon.facebook.models import ApiPasswordRequest
-from horizon.facebook.models import FacebookProfile
+from keystoneclient.v2_0 import client as keystone_client
 
 
 class ApiPasswordForm(forms.SelfHandlingForm):
     def handle(self, request, data):
         
-        user = User.objects.get(username=request.user.username)
-        profile = FacebookProfile.objects.get(user=user)
-        req, c = ApiPasswordRequest.objects.get_or_create(user=user)
-        if not c:
-            req.set_stamp = None
-            req.save()
         password = "".join([random.choice(
                             string.ascii_uppercase + string.ascii_lowercase + string.digits)
                                    for i in range(16)])
 
         try:
-            api.keystone.user_update_own_password(request,
-                                                profile.password,
-                                                password)
-            profile.password = password
-            profile.save() 
-            return True
+            client = keystone_client.Client(
+                                    username=settings.ADMIN_USER,
+                                    password=settings.ADMIN_PASSWORD,
+                                    tenant_name=settings.ADMIN_TENANT,
+                                    auth_url=settings.OPENSTACK_KEYSTONE_URL)
+             
+            client.users.update_password(request.user.id, password)
+            request.session['password'] = password
 
         except Exception, e:
             exceptions.handle(request,

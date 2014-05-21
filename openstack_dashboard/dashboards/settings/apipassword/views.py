@@ -32,25 +32,10 @@ class ApiPasswordView(forms.ModalFormView):
 
     def get_context_data(self, **kwargs):
         user = None
-        pass_req = None
         password = None
-        try:
-            user = User.objects.get(username=self.request.user.username)
-            try:
-                pass_req = ApiPasswordRequest.objects.get(user_id = user.id)
-                if pass_req.set_stamp == None:
-                    profile = FacebookProfile.objects.get(user=user)
-                    password = profile.password
-                    self.request.session.set_expiry(3)
+        if 'password' in self.request.session:
+            password = self.request.session['password']
+            self.request.session.set_expiry(3)
 
-                pass_req.set_stamp = datetime.now()
-                pass_req.save()
-
-            except:
-                pass
-        except:
-            pass
-          
         return {'user': user,
-                'pass_req': pass_req,
                 'password': password}
