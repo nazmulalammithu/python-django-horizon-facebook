@@ -14,10 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns
+from django.conf.urls import url
 
-from .views import ApiPasswordView
+from openstack_dashboard.dashboards.settings.apipassword import views
 
 
 urlpatterns = patterns('',
-    url(r'^$', ApiPasswordView.as_view(), name='index'))
+    url(r'^$', views.ApiPasswordView.as_view(), name='index'))

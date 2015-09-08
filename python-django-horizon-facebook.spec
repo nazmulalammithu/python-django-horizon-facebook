@@ -1,5 +1,5 @@
 Name:		python-django-horizon-facebook
-Version:	2014.1
+Version:	2015.1
 Release:	1%{?dist}
 Summary:	A facebook auth plugin for horizon and api password distribution
 
